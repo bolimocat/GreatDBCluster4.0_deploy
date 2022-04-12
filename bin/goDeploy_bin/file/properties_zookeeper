@@ -1,0 +1,16 @@
+#操作用户
+USER=greatdb
+PASSWORD=abc123
+
+#配置节点数量，配置节点所在主机。(此处如果变更，需要修改generate_conf_dbscale.sh中zk_host的部分。)
+ZK_HOST=192.168.2.18,192.168.2.19
+
+#环境部署基础目录
+BASE_PATH=/home/greatdb/goDeploy
+ZKPTH=/zookeeper
+
+#本次部署集群的工具包
+ZKNM=zookeeper-3.5.8
+
+
+

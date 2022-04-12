@@ -1,0 +1,7 @@
+
+bin/goDeploy_bin/file/distribute_mysql
+bin/goDeploy_bin/file/distribute_mysql_21_24
+bin/goDeploy_bin/file/properties_170
+bin/goDeploy_bin/file/properties_local
+bin/goDeploy_bin/file/properties_reset
+src/goDeploy/configure/cfgDBSCALE.go.bk
