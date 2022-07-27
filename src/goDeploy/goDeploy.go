@@ -6,11 +6,13 @@ import (
 	"strings"
 	"strconv"
 	
+	
 	//加载本地包
 	loadProperties "goDeploy/load" //读取配置文件
 	remote "goDeploy/remote"	//远程目录控制，创建目录等操作shell
 	transmit "goDeploy/transmit"	//传输文件到远程目录
 	configure "goDeploy/configure"
+	local "goDeploy/local"
 	
 )
 
@@ -63,6 +65,7 @@ func main(){
 			//将每个IP追加到HOST_IP分片中
 			HOST_IP = append(HOST_IP,host)
 		}
+		
 		
 		//过滤GLOBAL角色IP
 		if strings.Contains(value, "GLOBAL_HOST"){
@@ -165,7 +168,7 @@ func main(){
 	}
 	
 	//在所有的dbscale节点创建需要的dbscale目录
-	for _,value := range DBSCALE_IP{
+	for index,value := range DBSCALE_IP{
 		
 		fmt.Println("dbscale主机： ",value," dbscale目录： ",DBSCALEPTH+"\n")
 		remote.DBSCALEfolder(user,password,value,22, BASEPTH, DBSCALEPTH)
@@ -174,16 +177,19 @@ func main(){
 			//参数：用户名，密码，host，端口，本地文件，远程目录
 			transmit.Transmit("root", "abc123", value, 22,"file/dbscale/"+DBSCALNM+".tar.gz",BASEPTH+"/"+DBSCALEPTH,DBSCALNM+".tar.gz","向 "+value+" 发送dbscale")
 		fmt.Println("远程解压dbscale文件包\n")
-		remote.DecoDBSCALE(user,password,value,22, BASEPTH, DBSCALEPTH,DBSCALNM+".tar.gz")
+			remote.DecoDBSCALE(user,password,value,22, BASEPTH, DBSCALEPTH,DBSCALNM+".tar.gz")
 		fmt.Println("修改 ",value," 节点上的dbscale的dbscale-service.sh\n")
-		remote.Nodemission(user, password, value, 22, "sed -i \"s/ulimit -n 102400/ulimit -n 1024000/g\" "+BASEPTH+"/"+DBSCALEPTH+"/dbscale/dbscale-service.sh")
+			remote.Nodemission(user, password, value, 22, "sed -i \"s/ulimit -n 102400/ulimit -n 1024000/g\" "+BASEPTH+"/"+DBSCALEPTH+"/dbscale/dbscale-service.sh")
 		fmt.Println("生成 ",value," 节点上的dbscale配置文件\n")
-		configure.GenDBSCALEfg("file/cfg/dbscale", value, BASEPTH, DBSCALEPTH,HOST_IP,ZK_IP,NORMAL_IP,SHARD_IP,SLAVE_NUM,"Y",BASEPTH,DBPTH,DBNAME)
+			configure.GenDBSCALEfg("file/cfg/dbscale", value, BASEPTH, DBSCALEPTH,HOST_IP,ZK_IP,NORMAL_IP,SHARD_IP,SLAVE_NUM,"Y",BASEPTH,DBPTH,DBNAME)
 
 		fmt.Println("传递dbscale的配置文件\n")
 			transmit.Transmit(user, password, value, 22,"file/cfg/dbscale_"+value+".conf",BASEPTH+"/"+DBSCALEPTH+"/dbscale","dbscale.conf","向 "+value+" 发送dbscale的配置文件")
 			remote.Nodemission(user, password, value, 22, "sed -i \"s/\\x0//g\" "+BASEPTH+"/"+DBSCALEPTH+"/dbscale/dbscale.conf")
 			remote.Nodemission(user, password, value, 22, "sed -i '286,288d' "+BASEPTH+"/"+DBSCALEPTH+"/dbscale/dbscale.conf")
+		if DBSCALE_IP[index] == "0"{
+			local.Mvlocalfile("file/cfg/dbscale_"+value+".conf", "file/pe/currentdbscalecfg.conf")
+		}
 	}
 	
 
