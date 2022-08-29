@@ -10,7 +10,8 @@ import (
 	
 )
 
-func GenDBSCALEfg(dbscalecfgfile string,dbscale_ip string,basepth string,dbscalepth string,host_ip []string,zk_ip []string,normal_ip []string,shard_ip []string,slave_num string,GLOBAL_ENABLE string,BASEPTH string,DBPTH string,DBNAME string){
+//cfgLine:本次部署新增的配置内容
+func GenDBSCALEfg(dbscalecfgfile string,dbscale_ip string,basepth string,dbscalepth string,host_ip []string,zk_ip []string,normal_ip []string,shard_ip []string,slave_num string,GLOBAL_ENABLE string,BASEPTH string,DBPTH string,DBNAME string,cfgLine []string){
 	
 	var zkstr string
 	gid := 102
@@ -18,10 +19,9 @@ func GenDBSCALEfg(dbscalecfgfile string,dbscale_ip string,basepth string,dbscale
 		
 	slave , err :=  strconv.Atoi(slave_num)
 	
-	
-	
 	f, err := os.OpenFile(dbscalecfgfile+"_"+dbscale_ip+".conf", os.O_CREATE|os.O_WRONLY, 0644)
 	defer f.Close()
+	
 	if err != nil {
 		fmt.Println(err.Error())
 	} else {
@@ -126,6 +126,9 @@ func GenDBSCALEfg(dbscalecfgfile string,dbscale_ip string,basepth string,dbscale
 		f.Write([]byte("use-spark = 0\n"))
 		f.Write([]byte("use-table-for-one-column-subquery = 1\n"))
 		f.Write([]byte("wait-timeout = 172800\n"))
+		for _,value := range cfgLine{
+			f.Write([]byte(value+" \n"))
+		}
 		f.Write([]byte("zk-log-file = "+basepth+""+dbscalepth+"/logs/zookeeper.log\n"))
 		 for _,value := range zk_ip {
 		 	zkstr = value+":2181," + zkstr

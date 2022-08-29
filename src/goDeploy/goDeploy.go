@@ -181,7 +181,8 @@ func main(){
 		fmt.Println("修改 ",value," 节点上的dbscale的dbscale-service.sh\n")
 			remote.Nodemission(user, password, value, 22, "sed -i \"s/ulimit -n 102400/ulimit -n 1024000/g\" "+BASEPTH+"/"+DBSCALEPTH+"/dbscale/dbscale-service.sh")
 		fmt.Println("生成 ",value," 节点上的dbscale配置文件\n")
-			configure.GenDBSCALEfg("file/cfg/dbscale", value, BASEPTH, DBSCALEPTH,HOST_IP,ZK_IP,NORMAL_IP,SHARD_IP,SLAVE_NUM,"Y",BASEPTH,DBPTH,DBNAME)
+		cfgLine := []string{"max-fetchnode-ready-rows-size=400000","sort-rows-size=40000"}
+			configure.GenDBSCALEfg("file/cfg/dbscale", value, BASEPTH, DBSCALEPTH,HOST_IP,ZK_IP,NORMAL_IP,SHARD_IP,SLAVE_NUM,"Y",BASEPTH,DBPTH,DBNAME,cfgLine)
 
 		fmt.Println("传递dbscale的配置文件\n")
 			transmit.Transmit(user, password, value, 22,"file/cfg/dbscale_"+value+".conf",BASEPTH+"/"+DBSCALEPTH+"/dbscale","dbscale.conf","向 "+value+" 发送dbscale的配置文件")
@@ -200,8 +201,8 @@ func main(){
 		remote.MYSQLfolder(user,password,value,22, BASEPTH, DBPTH)
 		fmt.Println("发送mysql文件包到目标位置\n")
 		//文件传输
-			//参数：用户名，密码，host，端口，本地文件，远程目录
-			transmit.Transmit("root", "abc123", value, 22,"file/mysql/"+DBNAME+".tar.gz",BASEPTH+"/"+DBPTH,DBNAME+".tar.gz","向 "+value+" 发送mysql")
+		//参数：用户名，密码，host，端口，本地文件，远程目录
+		transmit.Transmit("root", "abc123", value, 22,"file/mysql/"+DBNAME+".tar.gz",BASEPTH+"/"+DBPTH,DBNAME+".tar.gz","向 "+value+" 发送mysql")
 		fmt.Println("远程解压mysql文件包\n")
 		remote.DecoMYSQL(user,password,value,22, BASEPTH, DBPTH,DBNAME+".tar.gz")
 		fmt.Println("将mysql二进制文件放入/usr/bin")
@@ -221,6 +222,12 @@ func main(){
 				ip := strings.Split(value, ":")[1]
 				port :=  strings.Split(value, ":")[2]
 				transmit.Transmit(user, password, ip, 22,"file/cfg/mysql_"+ip+"_"+port+".conf",BASEPTH+"/"+DBPTH,"mysql_"+ip+"_"+port+".conf","向 "+ip+" 发送mysql配置文件")
+				//mkdir tmp logfile data on remote
+				fmt.Println("mkdir : "+user+" "+password+" "+ip+" mkdir -p "+BASEPTH+"/mysqldata"+port+"/tmp")
+				remote.Nodemission(user, password, ip, 22, "mkdir -p "+BASEPTH+"/mysqldata"+port+"/tmp")
+				remote.Nodemission(user, password, ip, 22, "mkdir -p "+BASEPTH+"/mysqldata"+port+"/logfile")
+				remote.Nodemission(user, password, ip, 22, "mkdir -p "+BASEPTH+"/mysqldata"+port)
+				
 				//remote.Nodemission(user, password, value, 22, "sed -i \"s/\\x0//g\" "+BASEPTH+"/"+DBPTH+"/mysql_"+value+"_"+port+".conf")
 				//remote.Nodemission(user, password, value, 22, "sed -i \"s/\\x0//g\" "+BASEPTH+"/"+DBSCALEPTH+"/dbscale/dbscale.conf")
 			}

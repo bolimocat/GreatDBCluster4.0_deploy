@@ -24,8 +24,11 @@ func main() {
 	flag.Parse()
 
 	//开始读取配置文件
-	var properties_info = loadProperties.Loadinfo("file/properties")
-	
+//	var properties_file string
+//	fmt.Println("请输入配置文件位置： ")
+//	fmt.Scanln(&properties_file)
+//	var properties_info = loadProperties.Loadinfo(properties_file)
+	var properties_info = loadProperties.Loadinfo("./file/properties")
 	//定义需要的配置项数组或变量
 	//执行用户
 	var user string
@@ -54,13 +57,13 @@ func main() {
 			//从分片中过滤配置信息
 			for _,value := range properties_info{
 				//过滤用户
-				if strings.Contains(value, "user"){
-					user = strings.Split(value, ":")[1]
-				}
+//				if strings.Contains(value, "user"){
+//					user = strings.Split(value, ":")[1]
+//				}
 				//过滤密码
-				if strings.Contains(value, "password"){
-					password = strings.Split(value, ":")[1]
-				}
+//				if strings.Contains(value, "password"){
+//					password = strings.Split(value, ":")[1]
+//				}
 				//过滤HOST_IP
 				if strings.Contains(value, "ZK_HOST"){
 					zk_host = strings.Split(value,":")[1]
@@ -68,15 +71,15 @@ func main() {
 				}
 			
 				//过滤基础位置
-				if strings.Contains(value,"BASTPTH"){
-					BASEPTH = strings.Split(value, ":")[1]
-				}
-				if strings.Contains(value,"ZKPTH"){
-					ZKPTH = strings.Split(value, ":")[1]
-				}
-				if strings.Contains(value, "ZKNM"){
-					ZKNM = strings.Split(value, ":")[1]
-				}
+//				if strings.Contains(value,"BASTPTH"){
+//					BASEPTH = strings.Split(value, ":")[1]
+//				}
+//				if strings.Contains(value,"ZKPTH"){
+//					ZKPTH = strings.Split(value, ":")[1]
+//				}
+//				if strings.Contains(value, "ZKNM"){
+//					ZKNM = strings.Split(value, ":")[1]
+//				}
 			}
 			
 			hosts := []string{ZK_IP[0]+":2181"}
@@ -113,7 +116,14 @@ func main() {
 		
 		//删除path
 		if command == "deletePath"{
-			// 创建zk连接地址
+			//从分片中过滤配置信息
+			for _,value := range properties_info{
+
+				if strings.Contains(value, "ZK_HOST"){
+					zk_host = strings.Split(value,":")[1]
+					ZK_IP = append(ZK_IP,zk_host)
+				}
+			}
 					hosts := []string{ZK_IP[0]+":2181"}
 					// 连接zk
 					conn, _, err := zk.Connect(hosts, time.Second*5)
@@ -122,6 +132,18 @@ func main() {
 						fmt.Println(err)
 						return
 					}
+					
+
+					
+//					_, stat, _ := conn.Get("/dbscale")
+//					err = conn.Delete("/dbscale", stat.Version)
+//					if err != nil {
+//						fmt.Printf("删除数据失败: %v\n", err)
+//						return
+//					}
+
+					
+//			获取不到授权信息
 			fmt.Println("删除zk信息")
 			del(conn,"/dbscale/configuration/changed_config_info")
 			del(conn,"/dbscale/configuration/master_config_info")
@@ -142,7 +164,6 @@ func main() {
 			del(conn,"/dbscale/cluster/nodes")
 			del(conn,"/dbscale/cluster")
 			del(conn,"/dbscale")
-			
 			fmt.Println("删除zk信息完成")
 		}
 		
